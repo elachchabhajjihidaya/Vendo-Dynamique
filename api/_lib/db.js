@@ -6,7 +6,7 @@ let pool;
 export function db(){
   if(pool)return pool;
   const {DB_HOST,DB_PORT,DB_NAME,DB_USER,DB_PASSWORD}=process.env;
-  if(!DB_HOST||!DB_NAME||!DB_USER)throw new Error('Configuration DB_* incomplete.');
+  const missing=['DB_HOST','DB_NAME','DB_USER'].filter(k=>!process.env[k]);if(missing.length){const e=new Error('Vercel DB environment variables are missing.');e.code='DB_ENV_MISSING';e.missing=missing;throw e}
   const caPath=path.join(process.cwd(),'certs','ca.pem');
   const ssl=fs.existsSync(caPath)?{ca:fs.readFileSync(caPath,'utf8'),rejectUnauthorized:true}:undefined;
   pool=mysql.createPool({host:DB_HOST,port:Number(DB_PORT||3306),database:DB_NAME,user:DB_USER,password:DB_PASSWORD,charset:'utf8mb4',waitForConnections:true,connectionLimit:5,ssl});
