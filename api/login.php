@@ -1,30 +1,14 @@
 <?php
 require_once __DIR__ . '/../config/helpers.php';
 cors();
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    jsonOut(['message' => 'Méthode non autorisée'], 405);
-}
-
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonOut(['message' => 'Methode non autorisee'], 405);
 $data = json_decode(file_get_contents('php://input'), true) ?? [];
-$email = trim($data['email'] ?? '');
+$email = strtolower(trim($data['email'] ?? ''));
 $password = $data['password'] ?? '';
-
-if (!$email || !$password) {
-    jsonOut(['message' => 'Email et mot de passe obligatoires'], 400);
-}
-
+if (!$email || !$password) jsonOut(['message' => 'Email et mot de passe obligatoires'], 400);
 $pdo = getDatabase();
-$stmt = $pdo->prepare('SELECT * FROM users WHERE email = ?');
+$stmt = $pdo->prepare('SELECT id, nom, email, password, role, photo_url FROM users WHERE email = ?');
 $stmt->execute([$email]);
 $user = $stmt->fetch();
-
-if (!$user || !password_verify($password, $user['password'])) {
-    jsonOut(['message' => 'Identifiants incorrects'], 400);
-}
-
-jsonOut([
-    'token' => createToken($user),
-    'role'  => $user['role'],
-    'nom'   => $user['nom'],
-]);
+if (!$user || !password_verify($password, $user['password'])) jsonOut(['message' => 'Identifiants incorrects'], 400);
+jsonOut(['token'=>createToken($user),'id'=>(int)$user['id'],'role'=>$user['role'],'nom'=>$user['nom'],'email'=>$user['email'],'photo_url'=>$user['photo_url']]);

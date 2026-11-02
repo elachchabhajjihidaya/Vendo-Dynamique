@@ -1,0 +1,43 @@
+﻿<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>VENDO â€” Ton marchÃ©, ton choix</title>
+<style>
+:root{--bg:#faf8f4;--card:#fff;--ink:#50311f;--mut:#907c6a;--line:#e9ddd0;--gold:#c89b69;--soft:#f3e7d7;--pri:#50311f;--prit:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d130d;--card:#2a1c13;--ink:#f3e8da;--mut:#b9a28c;--line:#4a3626;--soft:#3a281b;--pri:#c89b69;--prit:#24170f}}
+:root[data-theme="dark"]{--bg:#1d130d;--card:#2a1c13;--ink:#f3e8da;--mut:#b9a28c;--line:#4a3626;--soft:#3a281b;--pri:#c89b69;--prit:#24170f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px max(4%,calc((100% - 1200px)/2));background:var(--card);border-bottom:1px solid var(--line)}
+.brand{display:flex;gap:10px;align-items:center;font-size:22px;font-weight:800;cursor:pointer}.brand svg{width:44px;height:44px}.tag{display:block;font-size:10px;color:var(--mut);font-weight:400}
+.nav{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 15px;border-radius:10px;font-weight:600}.btn.p{background:var(--pri);color:var(--prit);border-color:var(--pri)}.btn.s{padding:7px 11px;font-size:13px}.btn.d{color:#b3402c}.btn:hover{filter:brightness(1.07)}
+main{max-width:1200px;margin:26px auto;padding:0 18px}h1,h2{font-weight:400;margin:6px 0}.sub,.hint{color:var(--mut);font-size:13px}.hint{font-size:11px}
+.hero{display:grid;grid-template-columns:36% 1fr;gap:34px}.pitch{background:#50311f;color:#f9f1e7;border-radius:24px;padding:36px 30px;display:flex;flex-direction:column;gap:14px}.pitch h1{font-size:40px;line-height:1.1}.pitch p{color:#d9cabc;line-height:1.6}.eyebrow{font-size:11px;letter-spacing:.05em;color:#d9b07d}.pitch .btn.p{background:#c89b69;border-color:#c89b69;color:#50311f;font-size:17px;padding:15px;margin-top:auto}
+.spaces{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}.space{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:left;color:var(--ink)}.space:hover{border-color:var(--gold)}.space b{display:block;margin:8px 0 5px}.space small{color:var(--mut);line-height:1.5;display:block}.ico{font-size:26px}
+.searchbar{display:flex;gap:8px}.field{width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:12px;outline:none}.field:focus{border-color:var(--gold)}
+.label{font-size:12px;font-weight:700;display:block;margin:14px 0 7px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.wide{grid-column:1/-1}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.auth{max-width:620px;margin:auto}.roles{display:grid;grid-template-columns:1fr 1fr;gap:10px}.role{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:14px;border-radius:14px;text-align:left}.role.on{border:2px solid var(--gold);background:var(--soft)}.role small{display:block;color:var(--mut);margin-top:5px;font-size:11px}
+.filters{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;grid-template-columns:2fr 1fr 1fr 90px 90px 1fr auto;gap:8px;margin:16px 0}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px}.thumb{height:90px;background:var(--soft);border-radius:12px;display:grid;place-items:center;font-size:38px}.card h3{margin:4px 0}.price{font-size:20px;font-weight:700}.meta{font-size:12px;color:var(--mut)}.badge{background:var(--soft);border-radius:20px;padding:4px 10px;font-size:11px;width:max-content}.foot{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap;padding-top:8px}
+.notice{background:var(--soft);padding:12px 14px;border-radius:12px;margin:12px 0}.empty{padding:36px;text-align:center;color:var(--mut);background:var(--card);border-radius:14px;grid-column:1/-1}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 0;border-bottom:1px solid var(--line)}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.tabs .btn.on{background:var(--pri);color:var(--prit)}.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+#toast{position:fixed;bottom:20px;right:20px;z-index:9;background:var(--pri);color:var(--prit);padding:12px 16px;border-radius:12px;max-width:80vw}.hidden{display:none!important}.foot2{text-align:center;color:var(--mut);font-size:11px;margin:28px}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}.filters{grid-template-columns:1fr 1fr}.filters .q{grid-column:1/-1}}
+@media(max-width:560px){.cards,.g2,.roles,.spaces{grid-template-columns:1fr}.pitch h1{font-size:32px}.btn{padding:9px 11px;font-size:13px}}
+/* Fond blanc extÃ©rieur; conserver les cartes et formulaires en brun */
+body{background:#fff!important;color:#50311f}
+.top{background:#fff}
+.top .brand{color:#50311f}
+.top .brand .tag{color:#907c6a}
+.foot2{color:#907c6a}
+.sub,.hint{color:#907c6a}
+.box,.card,.empty{background:#2a1c13;color:#f3e8da;border-color:#4a3626}
+.box .sub,.box .hint,.box .meta,.card .meta,.empty{color:#b9a28c}
+.box .field{background:#2a1c13;color:#f3e8da;border-color:#4a3626}</style></head><body>
+<header class="top"><div class="brand" data-act="go:home"><svg viewBox="0 0 100 100"><rect width="100" height="100" rx="26" fill="#4a2f1f"/><path d="M27 22h46v34L50 82 27 56z" fill="#f5ede0"/><circle cx="50" cy="33" r="4" fill="#4a2f1f"/><path d="M36 46l14 17 14-17" fill="none" stroke="#c49a6c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="82" cy="15" r="6" fill="#c49a6c"/></svg><div>VENDO<span class="tag">Ton marchÃ©, ton choix</span></div></div><nav class="nav" id="nav"></nav></header>
+<main id="view"></main><div class="foot2">VENDO Â· Ton marchÃ©, ton choix</div><div id="toast" class="hidden"></div>
+<script src="assets/vendo.js" defer></script></body></html>
+
+
+
+
+
+
+

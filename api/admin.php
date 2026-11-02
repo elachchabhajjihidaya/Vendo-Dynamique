@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $what = $_GET['what'] ?? 'annonces';
 
     if ($what === 'annonceurs') {
-        jsonOut($pdo->query("SELECT id, nom, email, created_at FROM users WHERE role='ANNONCEUR' ORDER BY id DESC")->fetchAll());
+        jsonOut($pdo->query("SELECT id, nom, email, telephone, photo_url, created_at FROM users WHERE role='ANNONCEUR' ORDER BY id DESC")->fetchAll());
     }
     if ($what === 'villes') {
         jsonOut($pdo->query('SELECT * FROM villes ORDER BY nom')->fetchAll());
