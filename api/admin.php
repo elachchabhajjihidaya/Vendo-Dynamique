@@ -112,8 +112,11 @@ switch ($action) {
         jsonOut(['message' => 'Annonceur ajouté', 'id' => $pdo->lastInsertId()], 201);
 
     case 'supprimer_annonceur':
+        $pdo->beginTransaction();
+        $pdo->prepare('DELETE FROM annonces WHERE user_id=?')->execute([$id]);
         $pdo->prepare("DELETE FROM users WHERE id=? AND role='ANNONCEUR'")->execute([$id]);
-        jsonOut(['message' => 'Annonceur supprimé']);
+        $pdo->commit();
+        jsonOut(['message' => 'Annonceur et annonces supprimes']);
 
     /* ---------- VILLES & CATEGORIES ---------- */
     case 'ajouter_ville':
