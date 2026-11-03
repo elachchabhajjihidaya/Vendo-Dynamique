@@ -1,5 +1,5 @@
 import {v2 as cloudinary} from 'cloudinary';
 import {Readable} from 'node:stream';
 import {fail} from './http.js';
-function configure(){const raw=process.env.CLOUDINARY_URL;if(!raw)throw new Error('CLOUDINARY_URL non configure.');const u=new URL(raw);cloudinary.config({cloud_name:u.hostname,api_key:decodeURIComponent(u.username),api_secret:decodeURIComponent(u.password),secure:true})}
+function configure(){const raw=process.env.CLOUDINARY_URL;if(!raw)fail('Le service photo doit être configuré sur Vercel (CLOUDINARY_URL).',503);const u=new URL(raw);cloudinary.config({cloud_name:u.hostname,api_key:decodeURIComponent(u.username),api_secret:decodeURIComponent(u.password),secure:true})}
 export async function uploadImage(file){if(!file||!file.buffer?.length)fail('Photo obligatoire.',400);if(file.size>4*1024*1024)fail('Image trop lourde (max 4 Mo)',400);if(!['image/jpeg','image/png','image/webp'].includes(file.mime))fail('Format image invalide',400);configure();return new Promise((resolve,reject)=>{const stream=cloudinary.uploader.upload_stream({folder:'vendo',resource_type:'image'},(err,result)=>err?reject(err):resolve(result.secure_url));Readable.from([file.buffer]).pipe(stream)})}
