@@ -7,7 +7,7 @@ let me=null;try{me=JSON.parse(localStorage.getItem('vendo_me')||'null')}catch{lo
 let ads=[],cats=[],cities=[],allUsers=[],page='home',atab='pending',edit=null,loginRole='ANNONCEUR';
 const toast=t=>{const e=$('#toast');if(!e)return;e.textContent=t;e.classList.remove('hidden');setTimeout(()=>e.classList.add('hidden'),3200)};
 const isAdmin=()=>me?.role==='ADMIN';
-async function req(url,opts={}){const r=await fetch(API+url,{...opts,credentials:'same-origin'});let d={};try{d=await r.json()}catch{}if(!r.ok){const error=Error(d.message||'Erreur serveur ('+r.status+')');error.status=r.status;throw error}return d}
+async function req(url,opts={}){opts.headers={...(opts.headers||{}),...(me?{'X-User-Id':String(me.id),'X-User-Role':me.role}:{})};const r=await fetch(API+url,{...opts,credentials:'same-origin'});let d={};try{d=await r.json()}catch{}if(!r.ok){const error=Error(d.message||'Erreur serveur ('+r.status+')');error.status=r.status;throw error}return d}
 const json=(action,extra={})=>req('admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...extra})});
 function saveMe(u){me=u;localStorage.setItem('vendo_me',JSON.stringify(u))}
 const routes={home:'index.html',ads:'pagefiltrage.html',auth:'pageinscription.html',dash:'espaceannanceure.html',admin:'espaceadministrateure.html',post:'pagepublierunannance.html',ad:'pageconsulteruneannance.html'};
