@@ -5,7 +5,7 @@ import {uploadImage} from './_lib/images.js';
 
 export const config={api:{bodyParser:false}};
 export default route(async(req,res)=>{
-  const user=current(req,'ANNONCEUR'),pdo=db();
+  const user=await current(req,'ANNONCEUR'),pdo=db();
   if(req.method==='GET'){
     const [rows]=await pdo.execute('SELECT a.*,a.image_url AS image,v.nom AS ville_nom,c.nom AS categorie_nom,u.nom AS annonceur_nom,u.email AS annonceur_email FROM annonces a LEFT JOIN villes v ON v.id=a.ville_id LEFT JOIN categories c ON c.id=a.categorie_id LEFT JOIN users u ON u.id=a.user_id WHERE a.user_id=? ORDER BY a.created_at DESC',[user.id]);
     return res.status(200).json(rows.map(a=>({...a,statut:a.statut==='VALIDEE'?'PUBLIEE':a.statut})));

@@ -4,7 +4,7 @@ import {route,method,bodyJson,query,fail} from './_lib/http.js';
 import {current} from './_lib/auth.js';
 
 export default route(async(req,res)=>{
-  const admin=current(req,'ADMIN'),pdo=db();
+  const admin=await current(req,'ADMIN'),pdo=db();
   if(req.method==='GET'){
     const what=query(req).get('what');
     if(what==='villes'||what==='categories'){
