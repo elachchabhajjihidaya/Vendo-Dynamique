@@ -7,8 +7,8 @@ export const config={api:{bodyParser:false}};
 export default route(async(req,res)=>{
   const user=current(req,'ANNONCEUR'),pdo=db();
   if(req.method==='GET'){
-    const [rows]=await pdo.execute("SELECT a.*,a.image_url AS image,CASE WHEN a.status='VALIDEE' THEN 'PUBLIEE' ELSE a.status END AS statut,v.nom AS ville_nom,c.nom AS categorie_nom,u.nom AS annonceur_nom,u.email AS annonceur_email FROM annonces a LEFT JOIN villes v ON v.id=a.ville_id LEFT JOIN categories c ON c.id=a.categorie_id LEFT JOIN users u ON u.id=a.user_id WHERE a.user_id=? ORDER BY a.created_at DESC",[user.id]);
-    return res.status(200).json(rows);
+    const [rows]=await pdo.execute('SELECT a.*,a.image_url AS image,v.nom AS ville_nom,c.nom AS categorie_nom,u.nom AS annonceur_nom,u.email AS annonceur_email FROM annonces a LEFT JOIN villes v ON v.id=a.ville_id LEFT JOIN categories c ON c.id=a.categorie_id LEFT JOIN users u ON u.id=a.user_id WHERE a.user_id=? ORDER BY a.created_at DESC',[user.id]);
+    return res.status(200).json(rows.map(a=>({...a,statut:a.statut==='VALIDEE'?'PUBLIEE':a.statut})));
   }
   if(method(req,res,['POST']))return;
   const {fields,files}=await multipart(req),action=fields.action||'creer';
@@ -16,7 +16,7 @@ export default route(async(req,res)=>{
     const titre=String(fields.titre||'').trim(),description=String(fields.description||'').trim(),prix=fields.prix,ville=Number(fields.ville_id),categorie=Number(fields.categorie_id);
     if(!titre||!description||!Number.isFinite(Number(prix))||!ville||!categorie)fail('Champs obligatoires manquants');
     const image=await uploadImage(files.image);
-    const [r]=await pdo.execute("INSERT INTO annonces (titre,description,prix,ville_id,categorie_id,image_url,user_id,status) VALUES (?,?,?,?,?,?,?,'EN_ATTENTE')",[titre,description,Number(prix),ville,categorie,image,user.id]);
+    const [r]=await pdo.execute("INSERT INTO annonces (titre,description,prix,ville_id,categorie_id,image_url,user_id,statut) VALUES (?,?,?,?,?,?,?,'EN_ATTENTE')",[titre,description,Number(prix),ville,categorie,image,user.id]);
     return res.status(201).json({message:'Annonce envoyee pour validation',id:r.insertId});
   }
   const id=Number(fields.id);
@@ -30,7 +30,7 @@ export default route(async(req,res)=>{
   }
   if(action==='modifier'){
     const image=files.image?.buffer?.length?await uploadImage(files.image):a.image_url;
-    await pdo.execute("UPDATE annonces SET titre=?,description=?,prix=?,ville_id=?,categorie_id=?,image_url=?,status='EN_ATTENTE' WHERE id=? AND user_id=?",[String(fields.titre||a.titre).trim(),String(fields.description||a.description).trim(),Number(fields.prix||a.prix),Number(fields.ville_id||a.ville_id),Number(fields.categorie_id||a.categorie_id),image,id,user.id]);
+    await pdo.execute("UPDATE annonces SET titre=?,description=?,prix=?,ville_id=?,categorie_id=?,image_url=?,statut='EN_ATTENTE' WHERE id=? AND user_id=?",[String(fields.titre||a.titre).trim(),String(fields.description||a.description).trim(),Number(fields.prix||a.prix),Number(fields.ville_id||a.ville_id),Number(fields.categorie_id||a.categorie_id),image,id,user.id]);
     return res.status(200).json({message:'Annonce modifiee, en attente de validation'});
   }
   fail('Action inconnue');

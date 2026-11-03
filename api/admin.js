@@ -15,21 +15,21 @@ export default route(async(req,res)=>{
       const [rows]=await pdo.query("SELECT id,nom,email,telephone,created_at FROM users WHERE role='ANNONCEUR' ORDER BY id DESC");
       return res.status(200).json(rows);
     }
-    let sql="SELECT a.*,a.image_url AS image,CASE WHEN a.status='VALIDEE' THEN 'PUBLIEE' ELSE a.status END AS statut,u.nom AS annonceur_nom,u.email AS annonceur_email,v.nom AS ville_nom,c.nom AS categorie_nom FROM annonces a JOIN users u ON u.id=a.user_id LEFT JOIN villes v ON v.id=a.ville_id LEFT JOIN categories c ON c.id=a.categorie_id";
+    let sql="SELECT a.*,a.image_url AS image,u.nom AS annonceur_nom,u.email AS annonceur_email,v.nom AS ville_nom,c.nom AS categorie_nom FROM annonces a JOIN users u ON u.id=a.user_id LEFT JOIN villes v ON v.id=a.ville_id LEFT JOIN categories c ON c.id=a.categorie_id";
     const args=[],status=query(req).get('statut');
-    if(status){sql+=' WHERE a.status=?';args.push(status==='PUBLIEE'?'VALIDEE':status)}
+    if(status){sql+=' WHERE a.statut=?';args.push(status==='PUBLIEE'?'VALIDEE':status)}
     sql+=' ORDER BY a.created_at DESC';
     const [rows]=await pdo.execute(sql,args);
-    return res.status(200).json(rows);
+    return res.status(200).json(rows.map(a=>({...a,statut:a.statut==='VALIDEE'?'PUBLIEE':a.statut})));
   }
   if(method(req,res,['POST']))return;
   const d=await bodyJson(req),action=d.action,id=Number(d.id||0);
   switch(action){
     case 'publier':
-      await pdo.execute("UPDATE annonces SET status='VALIDEE',validee_par=?,date_validation=CURRENT_TIMESTAMP WHERE id=?",[admin.id,id]);
+      await pdo.execute("UPDATE annonces SET statut='VALIDEE',validee_par=?,date_validation=CURRENT_TIMESTAMP WHERE id=?",[admin.id,id]);
       return res.status(200).json({message:'Annonce publiee'});
     case 'refuser':
-      await pdo.execute("UPDATE annonces SET status='REFUSEE' WHERE id=?",[id]);
+      await pdo.execute("UPDATE annonces SET statut='REFUSEE' WHERE id=?",[id]);
       return res.status(200).json({message:'Annonce refusee'});
     case 'supprimer_annonce':
       await pdo.execute('DELETE FROM annonces WHERE id=?',[id]);
@@ -37,9 +37,9 @@ export default route(async(req,res)=>{
     case 'modifier_annonce':{
       const [rows]=await pdo.execute('SELECT * FROM annonces WHERE id=?',[id]),a=rows[0];
       if(!a)fail('Annonce introuvable',404);
-      let status=['EN_ATTENTE','PUBLIEE','VALIDEE','REFUSEE'].includes(d.statut)?d.statut:a.status;
+      let status=['EN_ATTENTE','PUBLIEE','VALIDEE','REFUSEE'].includes(d.statut)?d.statut:a.statut;
       if(status==='PUBLIEE')status='VALIDEE';
-      await pdo.execute('UPDATE annonces SET titre=?,description=?,prix=?,ville_id=?,categorie_id=?,status=? WHERE id=?',[d.titre??a.titre,d.description??a.description,d.prix??a.prix,d.ville_id??a.ville_id,d.categorie_id??a.categorie_id,status,id]);
+      await pdo.execute('UPDATE annonces SET titre=?,description=?,prix=?,ville_id=?,categorie_id=?,statut=? WHERE id=?',[d.titre??a.titre,d.description??a.description,d.prix??a.prix,d.ville_id??a.ville_id,d.categorie_id??a.categorie_id,status,id]);
       return res.status(200).json({message:'Annonce modifiee'});
     }
     case 'ajouter_annonceur':{

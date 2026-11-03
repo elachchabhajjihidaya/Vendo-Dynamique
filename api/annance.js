@@ -13,7 +13,7 @@ export default route(async(req,res)=>{
     return res.status(200).json(r);
   }
   const id=p.get('id');
-  let sql="SELECT a.*,a.image_url AS image,CASE WHEN a.status='VALIDEE' THEN 'PUBLIEE' ELSE a.status END AS statut,v.nom AS ville_nom,c.nom AS categorie_nom,u.nom AS annonceur_nom FROM annonces a LEFT JOIN villes v ON v.id=a.ville_id LEFT JOIN categories c ON c.id=a.categorie_id LEFT JOIN users u ON u.id=a.user_id WHERE a.status='VALIDEE'";
+  let sql="SELECT a.*,a.image_url AS image,v.nom AS ville_nom,c.nom AS categorie_nom,u.nom AS annonceur_nom FROM annonces a LEFT JOIN villes v ON v.id=a.ville_id LEFT JOIN categories c ON c.id=a.categorie_id LEFT JOIN users u ON u.id=a.user_id WHERE a.statut='VALIDEE'";
   const args=[];
   if(id){sql+=' AND a.id=?';args.push(Number(id))}
   if(p.get('ville_id')){sql+=' AND a.ville_id=?';args.push(Number(p.get('ville_id')))}
@@ -24,5 +24,6 @@ export default route(async(req,res)=>{
   sql+=' ORDER BY a.created_at DESC';
   const [rows]=await db().execute(sql,args);
   if(id&&!rows.length)return res.status(404).json({message:'Introuvable'});
-  res.status(200).json(id?rows[0]:rows);
+  const normalized=rows.map(a=>({...a,statut:a.statut==='VALIDEE'?'PUBLIEE':a.statut}));
+  res.status(200).json(id?normalized[0]:normalized);
 });
