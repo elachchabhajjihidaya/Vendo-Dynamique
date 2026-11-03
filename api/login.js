@@ -1,4 +1,45 @@
 import bcrypt from 'bcryptjs';
 import {db} from './_lib/db.js';
 import {route,method,bodyJson,fail} from './_lib/http.js';
-export default route(async(req,res)=>{if(method(req,res,['POST']))return;const d=await bodyJson(req),email=String(d.email||'').trim().toLowerCase(),password=String(d.password||'');if(!email||!password)fail('Email et mot de passe obligatoires');const [rows]=await db().execute('SELECT id,nom,email,mot_de_passe AS password,role FROM users WHERE email=? LIMIT 1',[email]);const u=rows[0];let ok=false;if(u){const hash=String(u.password||'').replace(/^\$2y\$/,'$2b$');ok=await bcrypt.compare(password,hash)}if(!ok)fail('Identifiants incorrects',400);if(d.role&&d.role!==u.role)fail('Ce compte ne correspond pas à l’espace choisi.',400);res.status(200).json({id:Number(u.id),role:u.role,nom:u.nom,email:u.email})});
+
+export default route(async(req,res)=>{
+  if(method(req,res,['POST']))return;
+  const d=await bodyJson(req);
+  const identifier=String(d.email||'').trim().toLowerCase();
+  const password=String(d.password||'');
+  const role=d.role||'ANNONCEUR';
+  if(!identifier||!password)fail('Identifiant et mot de passe obligatoires');
+
+  const database=db();
+  const [rows]=await database.execute(
+    'SELECT id,nom,email,mot_de_passe AS password,role FROM users WHERE email=? OR (LOWER(nom)=? AND role=?) LIMIT 1',
+    [identifier,identifier,role]
+  );
+  let user=rows[0];
+
+  // Create the requested demo admin once, only when the database has no admin yet.
+  if(!user&&identifier==='admin'&&password==='admin'&&role==='ADMIN'){
+    const [admins]=await database.execute("SELECT id FROM users WHERE role='ADMIN' LIMIT 1");
+    if(!admins.length){
+      const hash=await bcrypt.hash('admin',12);
+      try{
+        const [created]=await database.execute(
+          "INSERT INTO users (nom,email,telephone,mot_de_passe,role) VALUES ('admin','admin@vendo.local',NULL,?,'ADMIN')",
+          [hash]
+        );
+        user={id:Number(created.insertId),nom:'admin',email:'admin@vendo.local',password:hash,role:'ADMIN'};
+      }catch(e){
+        if(e.code!=='ER_DUP_ENTRY')throw e;
+      }
+    }
+  }
+
+  let valid=false;
+  if(user){
+    const hash=String(user.password||'').replace(/^\$2y\$/,'$2b$');
+    valid=await bcrypt.compare(password,hash);
+  }
+  if(!valid)fail('Identifiants incorrects',400);
+  if(user.role!==role)fail('Ce compte ne correspond pas à l’espace choisi.',400);
+  res.status(200).json({id:Number(user.id),role:user.role,nom:user.nom,email:user.email});
+});

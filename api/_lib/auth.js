@@ -1,11 +1,19 @@
+import bcrypt from 'bcryptjs';
+import {db} from './db.js';
 import {fail} from './http.js';
 
-// Lightweight identity hints for a demo without JWT or server-side sessions.
-// These headers can be forged by clients and are not suitable for production.
-export function current(req,role){
-  const id=Number(req.headers['x-user-id']||0);
-  const userRole=String(req.headers['x-user-role']||'');
-  if(!id||!userRole)fail('Connectez-vous pour continuer.',401);
-  if(role&&userRole!==role)fail('Acces interdit',403);
-  return {id,role:userRole};
+export async function current(req,role){
+  const email=String(req.headers['x-user-email']||'').trim().toLowerCase();
+  const password=String(req.headers['x-user-password']||'');
+  if(!email||!password)fail('Connectez-vous pour continuer.',401);
+  const [rows]=await db().execute(
+    'SELECT id,nom,email,mot_de_passe,role FROM users WHERE email=? LIMIT 1',
+    [email]
+  );
+  const user=rows[0];
+  if(!user)fail('Identifiants incorrects.',401);
+  const hash=String(user.mot_de_passe||'').replace(/^\$2y\$/,'$2b$');
+  if(!await bcrypt.compare(password,hash))fail('Identifiants incorrects.',401);
+  if(role&&user.role!==role)fail('Acces interdit',403);
+  return {id:Number(user.id),nom:user.nom,email:user.email,role:user.role};
 }
